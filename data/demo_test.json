@@ -1,0 +1,11 @@
+{
+  "contexts": [
+    "David Brock (born November 2, 1962) is an American Neo-Liberal political operative, author, and commentator who founded the media watchdog group Media Matters for America. He has been described by \"Time\" as \"one of the most influential operatives in the Democratic Party\".",
+    "The Seduction of Hillary Rodham is a 1996 book about the early years of Hillary Rodham Clinton written by David Brock."
+  ],
+  "answer": "The Seduction of Hillary Rodham",
+  "annotated_question_noclue": "Which book about the early years of Hillary Rodham Clinton was written by the founder of Media Matters for America?",
+  "gpt35_1hop": "What is the name of the book about the early years of Hillary Rodham Clinton written by David Brock?",
+  "bart_base_predicted": "What 1996 book about the early years of Hillary Rodham Clinton was written by an American Neo",
+  "random_q": "Which black comedy sequel to \"Forgetting Sarah Marshall\" starred an Australian actress?"
+}
