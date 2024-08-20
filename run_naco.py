@@ -1,7 +1,7 @@
 import openai
 import os
 import json
-from reformatted_naco import get_naco
+from naco import get_naco
 
 
 def load_json_file(filepath):

@@ -1,3 +1,15 @@
+"""
+This module implements NACo, a reference-free metric for evaluating question generation using large language models (LLMs).
+Users are primarily intended to interact with the `get_naco` function, which calculates the NACO score
+for a set of questions, answers, and contexts.
+
+Functions:
+- get_naco: The main function to calculate NACO scores.
+- create_cotqa_prompt: Helper function to generate the CotQA prompt for the LLM.
+- call_llm: Function to call the LLM API with a prompt.
+- get_individual_scores: Function to evalaute question's quality based on individual criteria.
+- combine_scores: Function to combine individual scores into the final NACo score.
+"""
 import re
 import string
 import statistics
@@ -23,8 +35,17 @@ def chat_completion_with_backoff(**kwargs):
     return openai.ChatCompletion.create(**kwargs)
 
 
-def create_cotqa_prompt(contexts, answer, question):
-    # Improved readability by breaking down long strings and fixing typos
+def create_cotqa_prompt(contexts, question):
+    """
+    Generates the CoTQA prompt for the LLM to answer the candidate question in the context of provided passages.
+
+    Args:
+        contexts (list of str): The context passage(s).
+        question (str): The question to evaluate.
+
+    Returns:
+        str: The formatted CoTQA prompt for the LLM.
+    """
     prompt = (
         "You will be given one or more context passages and a sentence. "
         "If the sentence is a question, your task is to output a text span from the context passage to answer the question. "
@@ -52,6 +73,16 @@ def create_cotqa_prompt(contexts, answer, question):
 
 
 def call_llm(prompt, model_name):
+    """
+    Calls the LLM API with a prompt.
+
+    Args:
+        prompt (str): The prompt to send to the LLM.
+        model_name (str): The name of the LLM model to use.
+
+    Returns:
+        str: The LLM's response to the prompt.
+    """
     completion = chat_completion_with_backoff(
         model=model_name,
         messages=[
@@ -63,6 +94,16 @@ def call_llm(prompt, model_name):
 
 
 def get_individual_scores(cotqa_res, answer):
+    """
+    Extracts and calculates individual scores (naturalness, answerability, and complexity) of the candidate question based on the LLM's CoTQA response.
+
+    Args:
+        cotqa_res (str): The LLM's response to the CoTQA prompt.
+        answer (str): The expected answer.
+
+    Returns:
+        tuple: A tuple containing naturalness, answerability, and complexity scores.
+    """
     def find_ans(input_string):
         patterns = [r'<ans>(.*?)<ans>', r'<ans>(.*?)</ans>']
         for pattern in patterns:
@@ -120,6 +161,21 @@ def get_individual_scores(cotqa_res, answer):
 
 
 def combine_scores(n_cand, a_cand, c_cand, expected_c, w_n=1/3, w_a=1/3, w_c=1/3):
+    """
+    Combines individual scores into a final NACo score.
+
+    Args:
+        n_cand (float): Naturalness score.
+        a_cand (float): Answerability score.
+        c_cand (float): Complexity score.
+        expected_c (float): Expected complexity.
+        w_n (float): Weight for naturalness.
+        w_a (float): Weight for answerability.
+        w_c (float): Weight for complexity.
+
+    Returns:
+        float: The final NACO score.
+    """
     c_cand = expected_c / c_cand  if c_cand > expected_c else c_cand / expected_c
 
     if n_cand == 0 or a_cand ==0:
@@ -131,7 +187,25 @@ def combine_scores(n_cand, a_cand, c_cand, expected_c, w_n=1/3, w_a=1/3, w_c=1/3
 
 
 def get_naco(contexts, answers, questions, model_name, call_llm_func=call_llm, n=1, w_n=1/3, w_a=1/3, w_c=1/3, expected_c=None, examples=[]):
-    
+    """
+    Calculates NACO scores for a set of candidate questions
+
+    Args:
+        contexts (list of list of str): Context passages.
+        answers (list of str): Expected answers.
+        questions (list of str): Questions to evaluate.
+        model_name (str): LLM model to use.
+        call_llm_func (function): Function to call the LLM.
+        n (int): Number of runs for each example.
+        w_n (float): Weight for naturalness.
+        w_a (float): Weight for answerability.
+        w_c (float): Weight for complexity.
+        expected_c (float): Expected complexity.
+        examples (list of tuples): Example contexts, answers, and reference questions to calculate expected complexity if not provided.
+
+    Returns:
+        list of dict: A list of dictionaries containing the NACO score and its components for each question.
+    """
     if expected_c is None and not examples:
         raise ValueError("If expected complexity is not provided, a set of references must be provided as `examples` parameter to calculate expected complexity.")
     
@@ -141,7 +215,7 @@ def get_naco(contexts, answers, questions, model_name, call_llm_func=call_llm, n
         for cts, ans, question in tqdm(examples, desc="Calculating expected complexity"):
             total_c_score = 0
             for _ in range(n):
-                cotqa_prompt = create_cotqa_prompt(cts, ans, question)
+                cotqa_prompt = create_cotqa_prompt(cts, question)
                 cotqa_res = call_llm_func(prompt=cotqa_prompt, model_name=model_name)
                 _, _, ref_c = get_individual_scores(cotqa_res, ans)
                 total_c_score += ref_c
@@ -156,7 +230,7 @@ def get_naco(contexts, answers, questions, model_name, call_llm_func=call_llm, n
         total_c_score = 0
 
         for _ in range(n):
-            cotqa_prompt = create_cotqa_prompt(cts, ans, question)
+            cotqa_prompt = create_cotqa_prompt(cts, question)
             cotqa_res = call_llm_func(prompt=cotqa_prompt, model_name=model_name)
             n_cand, a_cand, c_cand = get_individual_scores(cotqa_res, ans)
             total_n_score += n_cand
