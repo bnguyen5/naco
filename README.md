@@ -24,3 +24,10 @@ This repository contains the code and data supporting our paper that (1) investi
 
 - **`naco.py`** implements the proposed metric NACo to evaluate the naturalness, answerability, and complexity of generated questions.
   - The current implementation of NACo uses GPT3.5 as the underlying Large Language Model (LLM). Hence, it relies on OpenAI API calls through the `call_llm_func` function. However, users can easily use a different LLM by replacing `call_llm_func` with their own implementation that interacts with other large language models (LLMs), either locally or via other API services.
+- **`run_naco.py`** provides a demo script for using NACo for evaluating question quality on the demo data (`data/demo_train.json` and `data/demo_test.json`).
+  - First, set up your OpenAI API Key
+  - Then, simply run `python run_naco.py` for demonstration.
+  - Example output
+  ```
+  [{'naco': 0.9885057471264367, 'naturalness': 1.0, 'answerability': 1.0, 'complexity': 4.666666666666667, 'expected_complexity': 4.833333333333334}, {'naco': 0.9195402298850573, 'naturalness': 1.0, 'answerability': 1.0, 'complexity': 3.6666666666666665, 'expected_complexity': 4.833333333333334}, {'naco': 0.8965517241379309, 'naturalness': 1.0, 'answerability': 1.0, 'complexity': 3.3333333333333335, 'expected_complexity': 4.833333333333334}, {'naco': 0, 'naturalness': 0.3333333333333333, 'answerability': 0.0, 'complexity': 2.6666666666666665, 'expected_complexity': 4.833333333333334}]
+  ```
