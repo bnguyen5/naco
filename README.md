@@ -11,7 +11,7 @@ This repository contains the code and data supporting our paper that (1) investi
   - `refq`: Original question from the [original SQuAD dataset](https://rajpurkar.github.io/SQuAD-explorer/)
   - `annoq`: New reference created by our human annotators
   - `annoq_clue_refq`: New reference created by our human annotators that make use of clue words used by `refq`
-- **`data/hotpotqa_candidates.json`**: Contains 64 examples from the HotpotQA dataset, each has 4 annotated questions: 2 additional human-written references, and 2 less desirable candidate questions
+- **`data/hotpotqa_candidates.json`**: Contains 80 examples from the HotpotQA dataset, each has 4 annotated questions: 2 additional human-written references, and 2 less desirable candidate questions
   - `og_id`: Id of the reference question from the [original HotpotQA dataset](https://hotpotqa.github.io/).
   - `contex_w_ans`: Concatenated Context Passages and Highlighted Answer Span
   - `refq`: Original question from the [original HotpotQA dataset](https://hotpotqa.github.io/)
